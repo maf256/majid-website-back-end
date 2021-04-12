@@ -1,36 +1,34 @@
-
 const express = require('express')
 const app = express()
 const port = 3000
-const pgp = require('pg-promise')()
-const db = pgp({ database: 'majid-website' })
+const mysql      = require('mysql');
+const connection = mysql.createConnection({
+    host     : '212.16.187.118',
+    user     : 'toyenblo_majid-admin',
+    password : '4hwJt!A9jLVTKCa',
+    database : 'toyenblo_majid-website'
+});
 
 
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 app.post('/', (req, res) => {
-    saveFormData(req.body)
-    .then((data) => {
-        console.log(data);
-        res.json(data)
-    })
-})
-
-function saveFormData(formData) {
-    const {name, email, subject, description} = formData;
-
+    const formData = req.body;
     const sql = `
         INSERT INTO
-            form(name, email, subject, description)
-        VALUES
-            ($1, $2, $3, $4)
-        RETURNING
-            *
+            form
+        SET
+            ?
     `
+    connection.query(sql, formData, function (error, results, fields) {
+        if (error) throw error;
+        // connected!
+        console.log('results', results);
+        console.log('fields', fields);
+    });
 
-    return db.any(sql, [name, email, subject, description])
-}
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
